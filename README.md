@@ -1,13 +1,13 @@
-# Dredge Design Custom Furniture Quote Configurator
+# Custom Furniture Quote Configurator
 
-This repository contains a practical, build-ready package for a **daily-use quote builder** tailored to Dredge Design’s catalog and custom workflow.
+This repository contains a practical, build-ready package for a **daily-use quote builder** tailored to a furniture designer's catalog and custom workflow.
 
 ## Deliverables in this repo
 
 - `specs/quote-config.schema.json` — concrete JSON Schema (Draft 2020-12) for quote data, including customer/project fields, line-item configuration, pricing, terms, and internal margin controls.
 - `specs/wireframes.md` — implementation wireframe spec with screen maps, required interactions, API surface, and acceptance criteria.
 
-## Context snapshot (from dredge.design)
+## Context snapshot
 
 The quote-builder model is aligned to Dredge’s visible catalog and option patterns:
 
