@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furniture-builder.local/schemas/quote-config.schema.json",
+  "title": "Dredge Design Quote",
+  "description": "Schema for signature and custom furniture quotes.",
+  "type": "object",
+  "required": [
+    "quoteId",
+    "version",
+    "status",
+    "createdAt",
+    "expiresAt",
+    "customer",
+    "project",
+    "lineItems",
+    "pricing",
+    "terms"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "quoteId": {
+      "type": "string",
+      "pattern": "^Q-[0-9]{6}$",
+      "examples": ["Q-104233"]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "sent", "viewed", "approved", "expired", "declined"],
+      "default": "draft"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "customer": {
+      "$ref": "#/$defs/customer"
+    },
+    "project": {
+      "$ref": "#/$defs/project"
+    },
+    "lineItems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/lineItem"
+      }
+    },
+    "pricing": {
+      "$ref": "#/$defs/pricing"
+    },
+    "terms": {
+      "$ref": "#/$defs/terms"
+    },
+    "internal": {
+      "$ref": "#/$defs/internal",
+      "description": "Not visible in client-facing quote output."
+    }
+  },
+  "$defs": {
+    "money": {
+      "type": "object",
+      "required": ["currency", "amount"],
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": ["USD"],
+          "default": "USD"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "multipleOf": 0.01
+        }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lengthIn": { "type": "number", "minimum": 1 },
+        "widthIn": { "type": "number", "minimum": 1 },
+        "heightIn": { "type": "number", "minimum": 1 },
+        "seatHeightIn": { "type": "number", "minimum": 1 },
+        "seatDepthIn": { "type": "number", "minimum": 1 }
+      }
+    },
+    "customer": {
+      "type": "object",
+      "required": ["name", "email"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "company": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "isTrade": { "type": "boolean", "default": false }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["projectType"],
+      "additionalProperties": false,
+      "properties": {
+        "projectType": {
+          "type": "string",
+          "enum": ["single_piece", "room_package", "trade_project", "hospitality"]
+        },
+        "installAddress": { "type": "string" },
+        "shippingZone": { "type": "string" },
+        "desiredInstallDate": { "type": "string", "format": "date" },
+        "leadTimeWeeks": { "type": "integer", "minimum": 1, "default": 8 }
+      }
+    },
+    "lineItem": {
+      "type": "object",
+      "required": [
+        "lineId",
+        "productFamily",
+        "baseType",
+        "name",
+        "quantity",
+        "spec",
+        "pricing"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "lineId": {
+          "type": "string",
+          "pattern": "^L-[0-9]{3}$",
+          "examples": ["L-001"]
+        },
+        "templateSku": {
+          "type": "string",
+          "description": "Catalog template id; omit for fully custom items."
+        },
+        "productFamily": {
+          "type": "string",
+          "enum": ["Edson", "Thomas", "Egans", "Myers", "Custom"]
+        },
+        "baseType": {
+          "type": "string",
+          "enum": [
+            "dining_chair",
+            "counter_stool",
+            "bar_stool",
+            "bench",
+            "coffee_table",
+            "end_table",
+            "nightstand",
+            "desk",
+            "lounge_chair",
+            "sofa",
+            "other"
+          ]
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "nickname": { "type": "string" },
+        "quantity": { "type": "integer", "minimum": 1, "default": 1 },
+        "spec": {
+          "type": "object",
+          "required": ["material", "complexityTier"],
+          "additionalProperties": false,
+          "properties": {
+            "dimensions": { "$ref": "#/$defs/dimensions" },
+            "material": {
+              "type": "string",
+              "enum": ["Big Leaf Maple", "Myrtle", "Walnut", "White Oak", "Other"]
+            },
+            "metalFinish": {
+              "type": "string",
+              "enum": ["Matte Black", "Matte White", "Matte Clear", "None", "Other"]
+            },
+            "woodFinish": {
+              "type": "string",
+              "description": "e.g. Rubio Monocoat 5% Smoke"
+            },
+            "upholstery": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fabricName": { "type": "string" },
+                "grade": { "type": "string", "enum": ["Standard", "Premium", "COM"] },
+                "color": { "type": "string" }
+              }
+            },
+            "complexityTier": {
+              "type": "integer",
+              "enum": [1, 2, 3],
+              "description": "1 = standard catalog, 2 = dimensional change, 3 = redesign"
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "pricing": {
+          "type": "object",
+          "required": [
+            "basePrice",
+            "sizeAdjustment",
+            "materialUpcharge",
+            "metalFinishUpcharge",
+            "upholsteryUpcharge",
+            "featureAdders",
+            "complexityMultiplier",
+            "unitPrice",
+            "lineTotal"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "basePrice": { "$ref": "#/$defs/money" },
+            "sizeAdjustment": { "$ref": "#/$defs/money" },
+            "materialUpcharge": { "$ref": "#/$defs/money" },
+            "metalFinishUpcharge": { "$ref": "#/$defs/money" },
+            "upholsteryUpcharge": { "$ref": "#/$defs/money" },
+            "featureAdders": { "$ref": "#/$defs/money" },
+            "complexityMultiplier": { "type": "number", "minimum": 1 },
+            "unitPrice": { "$ref": "#/$defs/money" },
+            "lineTotal": { "$ref": "#/$defs/money" },
+            "estimatedLaborHours": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "pricing": {
+      "type": "object",
+      "required": ["subtotal", "projectAdjustments", "tax", "shipping", "total", "depositDue"],
+      "additionalProperties": false,
+      "properties": {
+        "subtotal": { "$ref": "#/$defs/money" },
+        "projectAdjustments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "amount"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "white_glove_delivery",
+                  "install",
+                  "rush_surcharge",
+                  "trade_discount",
+                  "package_discount",
+                  "custom"
+                ]
+              },
+              "label": { "type": "string" },
+              "amount": { "$ref": "#/$defs/money" }
+            }
+          }
+        },
+        "tax": { "$ref": "#/$defs/money" },
+        "shipping": { "$ref": "#/$defs/money" },
+        "total": { "$ref": "#/$defs/money" },
+        "depositDue": { "$ref": "#/$defs/money" },
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["milestone", "amount"],
+            "properties": {
+              "milestone": {
+                "type": "string",
+                "enum": ["deposit", "fabrication_start", "delivery", "final"]
+              },
+              "dueDate": { "type": "string", "format": "date" },
+              "amount": { "$ref": "#/$defs/money" }
+            }
+          }
+        }
+      }
+    },
+    "terms": {
+      "type": "object",
+      "required": ["validDays", "depositPercent", "warrantySummary"],
+      "additionalProperties": false,
+      "properties": {
+        "validDays": { "type": "integer", "minimum": 1, "default": 30 },
+        "depositPercent": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 },
+        "estimatedLeadTimeWeeks": { "type": "integer", "minimum": 1, "default": 8 },
+        "warrantySummary": { "type": "string", "minLength": 1 },
+        "exclusions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "internal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "owner": { "type": "string" },
+        "estimatedCogs": { "$ref": "#/$defs/money" },
+        "grossMarginPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "marginFloorPercent": { "type": "number", "minimum": 0, "maximum": 100, "default": 30 },
+        "marginTargetPercent": { "type": "number", "minimum": 0, "maximum": 100, "default": 40 },
+        "belowMarginFloor": { "type": "boolean" },
+        "overrideReason": { "type": "string" },
+        "revisionNotes": { "type": "string" }
+      }
+    }
+  }
+}
